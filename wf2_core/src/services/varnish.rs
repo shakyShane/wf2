@@ -25,8 +25,11 @@ impl Service for VarnishService {
 
         DcService::new(ctx.name(), Self::NAME, Self::IMAGE)
             .set_depends_on(depends_on)
-            .set_labels(TraefikService::host_only_entry_label(
-                base_domains.join(","),
+            .set_labels(TraefikService::route_to_svc(
+                Self::NAME,
+                base_domains,
+                true,
+                80,
             ))
             .finish()
     }
@@ -47,11 +50,14 @@ mod tests {
             container_name: wf2__wf2_default__varnish
             image: "wearejh/varnish:latest"
             labels:
-              - "traefik.frontend.rule=Host:local.m2"
+              - "traefik.http.routers.local-m2.rule=Host(`local.m2`)"
+              - "traefik.http.routers.local-m2.service=varnish_svc"
+              - "traefik.http.routers.local-m2.tls=true"
+              - "traefik.enable=true"
+              - "traefik.http.services.varnish_svc.loadBalancer.server.port=80"
             depends_on:
               - nginx
               - php
-
         "#;
         let expected_dc: DcService = serde_yaml::from_str(expected).expect("test yaml");
         assert_eq!(actual_dc, expected_dc);
@@ -69,7 +75,17 @@ mod tests {
             container_name: wf2__wf2_default__varnish
             image: "wearejh/varnish:latest"
             labels:
-              - "traefik.frontend.rule=Host:example.m2,example.pwa,test.ngrok.io"
+              - "traefik.http.routers.example-m2.rule=Host(`example.m2`)"
+              - "traefik.http.routers.example-m2.service=varnish_svc"
+              - "traefik.http.routers.example-m2.tls=true"
+              - "traefik.http.routers.example-pwa.rule=Host(`example.pwa`)"
+              - "traefik.http.routers.example-pwa.service=varnish_svc"
+              - "traefik.http.routers.example-pwa.tls=true"
+              - "traefik.http.routers.test-ngrok-io.rule=Host(`test.ngrok.io`)"
+              - "traefik.http.routers.test-ngrok-io.service=varnish_svc"
+              - "traefik.http.routers.test-ngrok-io.tls=true"
+              - "traefik.enable=true"
+              - "traefik.http.services.varnish_svc.loadBalancer.server.port=80"
             depends_on:
               - nginx
               - php

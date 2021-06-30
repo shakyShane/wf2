@@ -1,21 +1,23 @@
-debug = true
+[global]
+  sendAnonymousUsage = false
 
-logLevel = "DEBUG"
-defaultEntryPoints = ["https","http"]
+[log]
+  level = "DEBUG" 
+  format = "common"
 
 [entryPoints]
   [entryPoints.http]
-  address = ":80"
-    [entryPoints.http.redirect]
-    entryPoint = "https"
+    address = ":80"
   [entryPoints.https]
-  address = ":443"
-  [entryPoints.https.tls]
+    address = ":443"
+    
+[api]
+  insecure = true
+  dashboard = true
 
-[retry]
-
-[docker]
-endpoint = "unix:///var/run/docker.sock"
-domain = "traefik.local"
-watch = true
-exposedByDefault = false
+[providers]
+  [providers.docker]
+  endpoint = "unix:///var/run/docker.sock"
+  [providers.file]
+  directory = "/etc/traefik/dynamic"
+  watch = true

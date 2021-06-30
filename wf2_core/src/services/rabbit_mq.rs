@@ -8,8 +8,8 @@ pub struct RabbitMqService;
 
 impl RabbitMqService {
     pub const DOMAIN: &'static str = "queue.jh";
-    pub const PORT_PUBLIC: u32 = 15672;
-    pub const PORT_INTERNAL: u32 = 5672;
+    pub const PORT_PUBLIC: u16 = 15672;
+    pub const PORT_INTERNAL: u16 = 5672;
 }
 
 impl fmt::Display for RabbitMqService {
@@ -32,8 +32,10 @@ impl Service for RabbitMqService {
                 format!("{port}:{port}", port = RabbitMqService::PORT_PUBLIC),
                 format!("{port}:{port}", port = RabbitMqService::PORT_INTERNAL),
             ])
-            .set_labels(TraefikService::host_entry_label(
-                RabbitMqService::DOMAIN,
+            .set_labels(TraefikService::route_to_svc(
+                RabbitMqService::NAME,
+                vec![RabbitMqService::DOMAIN.into()],
+                false,
                 RabbitMqService::PORT_PUBLIC,
             ))
             .finish()

@@ -22,12 +22,15 @@ impl Service for MailService {
     const IMAGE: &'static str = "mailhog/mailhog";
 
     fn dc_service(&self, ctx: &Context, _: &()) -> DcService {
+        let traefik_label = TraefikService::route_to_svc(
+            MailService::NAME,
+            vec![MailService::DOMAIN.into()],
+            true,
+            8025,
+        );
         DcService::new(ctx.name(), Self::NAME, Self::IMAGE)
             .set_ports(vec!["1025"])
-            .set_labels(TraefikService::host_entry_label(
-                MailService::DOMAIN,
-                8025_u32,
-            ))
+            .set_labels(traefik_label)
             .finish()
     }
 }

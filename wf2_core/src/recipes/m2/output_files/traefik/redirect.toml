@@ -1,0 +1,16 @@
+[http.services.DefaultHTTPSRedirect.loadBalancer]
+  [[http.services.DefaultHTTPSRedirect.loadBalancer.servers]]
+    url = "http://localhost/"
+
+# router with PathPrefix /, so everything will be matched
+[http.routers.DefaultHTTPSRedirect]
+  entryPoints = [ "http" ]
+  rule = "PathPrefix(`/`)"
+  middlewares = [ "DefaultHTTPSRedirect" ]
+  service = "DefaultHTTPSRedirect"
+  # lowest possible priority so that the match can be overwritten by anyone
+  priority = 1
+
+[http.middlewares.DefaultHTTPSRedirect.RedirectScheme]
+  scheme = "https"
+  permanent = true
